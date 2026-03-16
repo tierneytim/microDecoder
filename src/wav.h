@@ -2,7 +2,7 @@
 #define MP3_H
 
 #include "Arduino.h"
-#include "FS.h"
+#include "SD.h"
 #include "pcm.h"
 
 class wav {
@@ -18,7 +18,7 @@ class wav {
 	private:	
 		pcm _audio;
 	    File _file;
-		int bufSize = 32;
+		int bufSize = 64;
 		unsigned char* _Buf; 
 };
 #endif

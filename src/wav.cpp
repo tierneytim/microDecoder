@@ -2,24 +2,24 @@
 
 void wav::begin(File file){
 	_file = file;
-	_Buf = reinterpret_cast<unsigned char *>(malloc(128));
+	_Buf = reinterpret_cast<unsigned char *>(malloc(_audio.nSamps * 2));
 
-	_audio.setSampleNumber(32);
+	_audio.setSampleNumber(_audio.nSamps);
 }
 
 pcm wav::decode(){
 
-int retval = _file.read(_Buf,128);
+int retval = _file.read(_Buf,_audio.nSamps * 2);
 
 if (retval <= 0) {
-	memset(_audio.interleaved,0,128);
-    _audio.nSamps=32;	
+	memset(_audio.interleaved,0,_audio.nSamps * 2);
+    //_audio.nSamps=64;	
     return(_audio);
 }
 		
 
 _audio.interleaved=(int16_t*)_Buf; 
-_audio.nSamps=32;
+//_audio.nSamps=64;
 
 	
 return _audio;

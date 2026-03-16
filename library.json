@@ -1,0 +1,21 @@
+{
+  "name": "microDecoder",
+  "keywords": "MP3, decode, decoding",
+  "description": "This library provides an easy to use and modular interface to decode mp3 files",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/TMRh20/microDecoder.git"
+  },
+  "authors":
+  {
+    "name": "Tim Tierney, TMRh20",
+    "email": "tmrh20@gmail.com",
+    "url": "https://github.com/TMRh20/microDecoder",
+    "maintainer": true
+  },
+  "version": "1.0.1",
+  "frameworks": "arduino",
+  "platforms": "*"
+  
+}
