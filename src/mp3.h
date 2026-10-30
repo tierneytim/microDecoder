@@ -23,6 +23,8 @@ class mp3 {
 		int _sampleNumber = 9999;
 		int _lastBuffLen;
 		bool _eofPadded = false;
+		unsigned long _dataStart = 0;
+		unsigned long skipID3();
 	    File _file;
 		struct mad_stream *_stream = reinterpret_cast<struct mad_stream *>(malloc(sizeof(struct mad_stream)));
 		struct mad_frame *_frame = reinterpret_cast<struct mad_frame *>(malloc(sizeof(struct mad_frame)));
