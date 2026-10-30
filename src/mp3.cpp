@@ -11,6 +11,7 @@ void mp3::begin(File file){
 	mad_stream_init(_stream);
 	mad_frame_init(_frame);
 	mad_synth_init(_synth);
+	_eofPadded = false;
 	_audio.setSampleNumber(32);
 	getMetadata();
 }
@@ -32,20 +33,19 @@ while(notDecoded){
   int retval = _file.read(_mp3Buf+keep, bufSize - keep);
   yield();
   if (retval < 0) {
-   memset(_audio.interleaved,0,128);
-   _audio.nSamps=32;
+   memset(_audio.interleaved,0,_audio.nBytes);
    return(_audio);
   }
 		
 		
   if (retval == 0) {
-   if (keep + MAD_BUFFER_GUARD <= bufSize) {
+   // EOF: pad once with MAD_BUFFER_GUARD zeros so libmad can decode the last frame
+   if (!_eofPadded && keep + MAD_BUFFER_GUARD <= bufSize) {
     memset(_mp3Buf + keep, 0, MAD_BUFFER_GUARD);
-	_lastBuffLen = keep + MAD_BUFFER_GUARD;
-	continue;
-   }else {
-    _lastBuffLen = 0;
+    keep += MAD_BUFFER_GUARD;
+    _eofPadded = true;
    }
+   _lastBuffLen = keep;
   }
 		
   if (retval > 0){
@@ -55,11 +55,18 @@ while(notDecoded){
   mad_stream_buffer(_stream, _mp3Buf, _lastBuffLen);
 		
   if(mad_frame_decode(_frame, _stream)==-1){
+   // No more data will arrive at EOF, so return silence instead of retrying forever
+   if (retval == 0) {
+    memset(_audio.interleaved,0,_audio.nBytes);
+    return(_audio);
+   }
    _chunkNumber++;
    continue;
   }else{
    notDecoded=false;
   }
+  // 36 chunks of 32 samples for MPEG-1, 18 for MPEG-2/2.5
+  _maxChunkNumber = MAD_NSBSAMPLES(&_frame->header);
   _chunkNumber=0;
  }
  break;
@@ -75,7 +82,6 @@ while (i<32) {
  _audio.interleaved[k++] = _synth->pcm.samples[1][j++]; 
  } 
 
-_audio.nSamps = 32;
 _audio.Fs = _synth->pcm.samplerate;
 	
 return _audio;
@@ -92,7 +98,16 @@ void mp3::getMetadata(){
 	}
 	
 	_file.seek(currentPosition);
-	
+
+	// Discard frames buffered while probing, otherwise they are played twice
+	mad_stream_finish(_stream);
+	mad_frame_finish(_frame);
+	mad_stream_init(_stream);
+	mad_frame_init(_frame);
+	mad_synth_init(_synth);
+	_chunkNumber = _maxChunkNumber;
+	_eofPadded = false;
+
 }
 
 void mp3::end(){

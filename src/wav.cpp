@@ -2,25 +2,22 @@
 
 void wav::begin(File file){
 	_file = file;
-	_Buf = reinterpret_cast<unsigned char *>(malloc(_audio.nSamps * 2));
-
 	_audio.setSampleNumber(_audio.nSamps);
 }
 
 pcm wav::decode(){
 
-int retval = _file.read(_Buf,_audio.nSamps * 2);
+int retval = _file.read((uint8_t*)_audio.interleaved, _audio.nBytes);
 
 if (retval <= 0) {
-	memset(_audio.interleaved,0,_audio.nSamps * 2);
-    //_audio.nSamps=64;	
+	memset(_audio.interleaved,0,_audio.nBytes);
     return(_audio);
 }
-		
 
-_audio.interleaved=(int16_t*)_Buf; 
-//_audio.nSamps=64;
-
+// Zero-fill a short final read so stale samples aren't replayed
+if (retval < _audio.nBytes) {
+	memset((uint8_t*)_audio.interleaved + retval, 0, _audio.nBytes - retval);
+}
 	
 return _audio;
 		
@@ -89,6 +86,5 @@ void wav::getMetadata(){
 }
 
 void wav::end(){
-	free(_Buf); 
 	_audio.releaseMemory();
 }
