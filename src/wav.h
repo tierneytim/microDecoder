@@ -1,8 +1,8 @@
-#ifndef MP3_H
-#define MP3_H
+#ifndef WAV_H
+#define WAV_H
 
 #include "Arduino.h"
-#include "FS.h"
+#include "SD.h"
 #include "pcm.h"
 
 class wav {
@@ -11,14 +11,12 @@ class wav {
 		void end();
 		pcm decode();
 		void getMetadata();
-		unsigned int Fs;
+		unsigned int Fs = 0;
 		int bitsPerSample;
 		 
 	
 	private:	
 		pcm _audio;
 	    File _file;
-		int bufSize = 32;
-		unsigned char* _Buf; 
 };
 #endif
